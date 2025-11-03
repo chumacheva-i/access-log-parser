@@ -5,23 +5,27 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         int fileCount = 0; // Счётчик верно указанных файлов
-
-        while (true) {
-            System.out.print("Введите путь к файлу: ");
+        boolean running=true;
+        while (running) {
+            System.out.print("Введите путь к файлу (или 'exit' для выхода): ");
             String path = scanner.nextLine();
 
+            if ("exit".equalsIgnoreCase(path)){
+                System.out.println("Программа завершена");
+                break;
+            }
             File file = new File(path);
             boolean fileExists = file.exists();
             boolean isDirectory = file.isDirectory();
 
             // Проверяем условия
-            if (!fileExists || isDirectory) {
-                if (!fileExists) {
-                    System.out.println("Файл не существует.");
-                } else if (isDirectory) {
-                    System.out.println("Указанный путь ведёт к папке, а не к файлу.");
-                }
-                continue; // Продолжаем цикл
+            if (!fileExists) {
+                System.out.println("Файл не существует.");
+                continue;
+            }
+            if (isDirectory) {
+                System.out.println("Указанный путь ведёт к папке, а не к файлу.");
+                continue;
             }
 
             // Если файл существует и это не папка
@@ -29,5 +33,6 @@ public class Main {
             fileCount++;
             System.out.println("Это файл номер " + fileCount);
         }
+        scanner.close();
     }
 }
