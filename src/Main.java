@@ -12,6 +12,7 @@ public class Main {
 
             if ("exit".equalsIgnoreCase(path)){
                 System.out.println("Программа завершена");
+                running=false;
                 break;
             }
             File file = new File(path);
