@@ -40,33 +40,34 @@ public class Main {
     }
     public static void analyzeLogFile(String path) {
         int totalLines = 0;
-        int maxLength = 0;
-        int minLength = Integer.MAX_VALUE;
+        int yandexBotCount = 0;
+        int googleBotCount = 0;
         try (FileReader fileReader = new FileReader(path);
              BufferedReader reader = new BufferedReader(fileReader)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 int length = line.length();
                 totalLines++;
-                if (length > maxLength) {
-                    maxLength = length;
-                }
-                if (length < minLength) {
-                    minLength = length;
-                }
                 if (length > 1024) {
                     throw new LineTooLongException("Обнаружена строка длиннее 1024 символов. Длина: " + length +
                             " символов. Строка: " + (line.length() > 100 ? line.substring(0, 100) + "..." : line));
                 }
+                BotCounters counters = parseLogLine(line, totalLines);
+                yandexBotCount += counters.yandexBot;
+                googleBotCount += counters.googleBot;
             }
-            if (totalLines == 0) {
-                minLength = 0;
+            if (totalLines > 0) {
+                double yandexBotPercentage = (double) yandexBotCount / totalLines * 100;
+                double googleBotPercentage = (double) googleBotCount / totalLines * 100;
+                System.out.println("Результаты анализа файла:");
+                System.out.println("Общее количество запросов: " + totalLines);
+                System.out.println("Запросы от YandexBot: " + yandexBotCount + " (" + String.format("%.2f", yandexBotPercentage) + "%)");
+                System.out.println("Запросы от Googlebot: " + googleBotCount + " (" + String.format("%.2f", googleBotPercentage) + "%)");
+            } else {
+                System.out.println("Файл пуст.");
             }
-            System.out.println("Результаты анализа файла:");
-            System.out.println("Общее количество строк: " + totalLines);
-            System.out.println("Длина самой длинной строки: " + maxLength);
-            System.out.println("Длина самой короткой строки: " + minLength);
             System.out.println();
+
         } catch (LineTooLongException e) {
             System.err.println("Ошибка: " + e.getMessage());
             throw e;
@@ -74,5 +75,56 @@ public class Main {
             System.err.println("Ошибка при чтении файла:");
             ex.printStackTrace();
         }
+    }
+    private static class BotCounters {
+        int yandexBot;
+        int googleBot;
+        BotCounters(int yandexBot, int googleBot) {
+            this.yandexBot = yandexBot;
+            this.googleBot = googleBot;
+        }
+    }
+    private static BotCounters parseLogLine(String line, int lineNumber) {
+        int yandexBot = 0;
+        int googleBot = 0;
+        try {
+            String[] partsByQuotes = line.split("\"");
+            if (partsByQuotes.length >= 6) {
+                String userAgent = partsByQuotes[5];
+                if (isYandexBot(userAgent)) {
+                    yandexBot = 1;
+                } else if (isGoogleBot(userAgent)) {
+                    googleBot = 1;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Ошибка при разборе строки " + lineNumber + ": " + e.getMessage());
+        }
+        return new BotCounters(yandexBot, googleBot);
+    }
+    private static boolean isYandexBot(String userAgent) {
+        return processUserAgent(userAgent, "YandexBot");
+    }
+    private static boolean isGoogleBot(String userAgent) {
+        return processUserAgent(userAgent, "Googlebot");
+    }
+    private static boolean processUserAgent(String userAgent, String botName) {
+        int startBrackets = userAgent.indexOf('(');
+        int endBrackets = userAgent.indexOf(')', startBrackets);
+
+        if (startBrackets != -1 && endBrackets != -1) {
+            String firstBrackets = userAgent.substring(startBrackets + 1, endBrackets);
+            String[] parts = firstBrackets.split(";");
+            if (parts.length >= 2) {
+                String fragment = parts[1].trim(); // очищаем от пробелов
+                String programName = fragment;
+                int slashIndex = fragment.indexOf('/');
+                if (slashIndex != -1) {
+                    programName = fragment.substring(0, slashIndex).trim();
+                }
+                return botName.equals(programName);
+            }
+        }
+        return false;
     }
 }
