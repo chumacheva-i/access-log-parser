@@ -2,11 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Scanner;
-class LineTooLongException extends RuntimeException {
-    public LineTooLongException(String message) {
-        super(message);
-    }
-}
+
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -38,10 +34,10 @@ public class Main {
         }
         scanner.close();
     }
+
     public static void analyzeLogFile(String path) {
         int totalLines = 0;
-        int yandexBotCount = 0;
-        int googleBotCount = 0;
+       Statistics statistics = new Statistics();
         try (FileReader fileReader = new FileReader(path);
              BufferedReader reader = new BufferedReader(fileReader)) {
             String line;
@@ -52,20 +48,20 @@ public class Main {
                     throw new LineTooLongException("Обнаружена строка длиннее 1024 символов. Длина: " + length +
                             " символов. Строка: " + (line.length() > 100 ? line.substring(0, 100) + "..." : line));
                 }
-                BotCounters counters = parseLogLine(line, totalLines);
-                yandexBotCount += counters.yandexBot;
-                googleBotCount += counters.googleBot;
+                try {
+                    LogEntry entry = new LogEntry(line);
+                    statistics.addEntry(entry);
+                } catch (Exception e) {
+                    System.err.println("Ошибка при разборе строки " + totalLines + ": " + e.getMessage());
+                }
             }
-            if (totalLines > 0) {
-                double yandexBotPercentage = (double) yandexBotCount / totalLines * 100;
-                double googleBotPercentage = (double) googleBotCount / totalLines * 100;
-                System.out.println("Результаты анализа файла:");
-                System.out.println("Общее количество запросов: " + totalLines);
-                System.out.println("Запросы от YandexBot: " + yandexBotCount + " (" + String.format("%.2f", yandexBotPercentage) + "%)");
-                System.out.println("Запросы от Googlebot: " + googleBotCount + " (" + String.format("%.2f", googleBotPercentage) + "%)");
-            } else {
-                System.out.println("Файл пуст.");
-            }
+
+            System.out.println("Результаты анализа файла:");
+            System.out.println("Общее количество строк: " + totalLines);
+            System.out.println("Обработано записей: " + statistics.getEntryCount());
+            System.out.println("Общий трафик: " + statistics.getTotalTraffic() + " байт");
+            System.out.println("Средний трафик в час: " + String.format("%.2f", statistics.getTrafficRate()) + " байт/час");
+            System.out.println("Временной диапазон: " + statistics.getMinTime() + " - " + statistics.getMaxTime());
             System.out.println();
 
         } catch (LineTooLongException e) {
@@ -75,56 +71,5 @@ public class Main {
             System.err.println("Ошибка при чтении файла:");
             ex.printStackTrace();
         }
-    }
-    private static class BotCounters {
-        int yandexBot;
-        int googleBot;
-        BotCounters(int yandexBot, int googleBot) {
-            this.yandexBot = yandexBot;
-            this.googleBot = googleBot;
-        }
-    }
-    private static BotCounters parseLogLine(String line, int lineNumber) {
-        int yandexBot = 0;
-        int googleBot = 0;
-        try {
-            String[] partsByQuotes = line.split("\"");
-            if (partsByQuotes.length >= 6) {
-                String userAgent = partsByQuotes[5];
-                if (isYandexBot(userAgent)) {
-                    yandexBot = 1;
-                } else if (isGoogleBot(userAgent)) {
-                    googleBot = 1;
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Ошибка при разборе строки " + lineNumber + ": " + e.getMessage());
-        }
-        return new BotCounters(yandexBot, googleBot);
-    }
-    private static boolean isYandexBot(String userAgent) {
-        return processUserAgent(userAgent, "YandexBot");
-    }
-    private static boolean isGoogleBot(String userAgent) {
-        return processUserAgent(userAgent, "Googlebot");
-    }
-    private static boolean processUserAgent(String userAgent, String botName) {
-        int startBrackets = userAgent.indexOf('(');
-        int endBrackets = userAgent.indexOf(')', startBrackets);
-
-        if (startBrackets != -1 && endBrackets != -1) {
-            String firstBrackets = userAgent.substring(startBrackets + 1, endBrackets);
-            String[] parts = firstBrackets.split(";");
-            if (parts.length >= 2) {
-                String fragment = parts[1].trim(); // очищаем от пробелов
-                String programName = fragment;
-                int slashIndex = fragment.indexOf('/');
-                if (slashIndex != -1) {
-                    programName = fragment.substring(0, slashIndex).trim();
-                }
-                return botName.equals(programName);
-            }
-        }
-        return false;
     }
 }
