@@ -37,7 +37,7 @@ public class Main {
 
     public static void analyzeLogFile(String path) {
         int totalLines = 0;
-       Statistics statistics = new Statistics();
+        Statistics statistics = new Statistics();
         try (FileReader fileReader = new FileReader(path);
              BufferedReader reader = new BufferedReader(fileReader)) {
             String line;
