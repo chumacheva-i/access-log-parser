@@ -64,6 +64,16 @@ public class Main {
             System.out.println("Временной диапазон: " + statistics.getMinTime() + " - " + statistics.getMaxTime());
             System.out.println();
 
+            System.out.println("Статистика существующих страниц (200):");
+            System.out.println("Количество уникальных страниц: " + statistics.getExistingPagesCount());
+            System.out.println("Список страниц:");
+            for (String page : statistics.getExistingPages()) {
+                System.out.println("  - " + page);
+            }
+
+            System.out.println();
+            System.out.println(statistics.getOsStatisticsAsString());
+
         } catch (LineTooLongException e) {
             System.err.println("Ошибка: " + e.getMessage());
             throw e;
