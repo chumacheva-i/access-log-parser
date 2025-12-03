@@ -74,6 +74,12 @@ public class Main {
             System.out.println();
             System.out.println(statistics.getOsStatisticsAsString());
 
+            System.out.println("Статистика несуществующих страниц (400):");
+            System.out.println(statistics.getNonExistingPagesAsString());
+            System.out.println("Всего несуществующих страниц (400):");
+            System.out.println(statistics.getNonExistingPagesCount());
+            //System.out.println(statistics.getBrowserStatisticsAsString()); //браузеры проценты не нужны в задании
+            System.out.println(statistics.getBrowserStatisticsDetailedAsString());
         } catch (LineTooLongException e) {
             System.err.println("Ошибка: " + e.getMessage());
             throw e;
