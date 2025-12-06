@@ -64,18 +64,31 @@ public class Main {
             System.out.println("Временной диапазон: " + statistics.getMinTime() + " - " + statistics.getMaxTime());
             System.out.println();
 
+            System.out.println("\n1. Среднее количество посещений сайта за час (только обычные браузеры):");
+            System.out.println(String.format("   %.2f посещений/час", statistics.getAverageVisitsPerHour()));
+            System.out.println("\n2. Среднее количество ошибочных запросов в час:");
+            System.out.println(String.format("   %.2f ошибок/час", statistics.getAverageErrorRequestsPerHour()));
+            System.out.println("\n3. Средняя посещаемость одним пользователем (обычные браузеры):");
+            System.out.println(String.format("   %.2f посещений/пользователя", statistics.getAverageVisitsPerUser()));
+            System.out.println();
+            System.out.println(statistics.getBotStatistics());
+            System.out.println();
+            System.out.println(statistics.getErrorStatistics());
+            System.out.println();
+            System.out.println(statistics.getVisitStatistics());
+
             System.out.println("Статистика существующих страниц (200):");
-            System.out.println("Количество уникальных страниц: " + statistics.getExistingPagesCount());
-            System.out.println("Список страниц:");
-            for (String page : statistics.getExistingPages()) {
-                System.out.println("  - " + page);
-            }
+           System.out.println("Количество уникальных страниц: " + statistics.getExistingPagesCount());
+//            System.out.println("Список страниц:");// слишком большой список страниц не видно статистики
+//            for (String page : statistics.getExistingPages()) {
+//                System.out.println("  - " + page);
+//            }
 
             System.out.println();
             System.out.println(statistics.getOsStatisticsAsString());
 
             System.out.println("Статистика несуществующих страниц (400):");
-            System.out.println(statistics.getNonExistingPagesAsString());
+//            System.out.println(statistics.getNonExistingPagesAsString()); пока уберу (слишком много)
             System.out.println("Всего несуществующих страниц (400):");
             System.out.println(statistics.getNonExistingPagesCount());
             //System.out.println(statistics.getBrowserStatisticsAsString()); //браузеры проценты не нужны в задании
