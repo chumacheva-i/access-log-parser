@@ -71,12 +71,24 @@ public class Main {
             System.out.println("\n3. Средняя посещаемость одним пользователем (обычные браузеры):");
             System.out.println(String.format("   %.2f посещений/пользователя", statistics.getAverageVisitsPerUser()));
             System.out.println();
+            System.out.println("\n4. Пиковая посещаемость сайта (только обычные браузеры):");
+            System.out.println("   Максимальное количество посещений в секунду: " + statistics.getPeakVisitsPerSecond());
+
+            System.out.println("\n5. Сайты-источники трафика (только от обычных браузеров):");
+            System.out.println("   Количество уникальных доменов: " + statistics.getRefererDomains().size());
+
+            System.out.println("\n6. Максимальная активность одного пользователя (не бота):");
+            System.out.println("   Максимальное количество посещений одним пользователем: " + statistics.getMaxVisitsPerUser());
             System.out.println(statistics.getBotStatistics());
             System.out.println();
             System.out.println(statistics.getErrorStatistics());
             System.out.println();
             System.out.println(statistics.getVisitStatistics());
-
+// Дополнительная детализированная статистика (опционально)
+            System.out.println("\n--- Детальная статистика ---");
+            System.out.println(statistics.getPeakVisitsStatistics());
+            System.out.println(statistics.getRefererStatistics());
+            System.out.println(statistics.getUserActivityStatistics());
             System.out.println("Статистика существующих страниц (200):");
            System.out.println("Количество уникальных страниц: " + statistics.getExistingPagesCount());
 //            System.out.println("Список страниц:");// слишком большой список страниц не видно статистики

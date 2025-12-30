@@ -14,7 +14,60 @@ public class UserAgent {
         this.originalUserAgentString = userAgentString;
         this.osType = parseOperatingSystem(userAgentString);
         this.browserType = parseBrowser(userAgentString);
-        this.isBot = isBot(userAgentString);
+        this.isBot = containsBotKeyword(userAgentString);
+    }
+    private boolean containsBotKeyword(String userAgentString) {
+        if (userAgentString == null || userAgentString.isEmpty()) {
+            return false;
+        }
+
+        String ua = userAgentString.toLowerCase();
+
+        // Проверяем наличие слова "bot" как отдельного слова или части слова
+        // Чтобы избежать ложных срабатываний (например, "robot" в описании браузера)
+        // Можно использовать регулярное выражение для более точного поиска
+
+        // Простой поиск подстроки "bot"
+        // return ua.contains("bot");
+
+        // Более точный поиск: "bot" как отдельное слово или с дефисом перед ним
+        // Это позволит отловить: "googlebot", "semrushbot", "ahrefsbot", "bingbot" и т.д.
+        // Игнорируем случаи вроде "robot" или "botanical"
+        return ua.matches(".*\\bbot\\b.*") ||
+                ua.matches(".*bot[^a-z].*") ||
+                ua.matches(".*bot$") ||
+                ua.contains("/bot") ||
+                ua.contains("bot/");
+    }
+
+    // Альтернативная, более строгая проверка только по слову "bot"
+    private boolean isBotByWord(String userAgentString) {
+        if (userAgentString == null || userAgentString.isEmpty()) {
+            return false;
+        }
+
+        String ua = userAgentString.toLowerCase();
+
+        // Разбиваем строку на слова и ищем точное совпадение "bot"
+        String[] words = ua.split("[\\W_]+"); // Разделяем по не-буквенным символам
+        for (String word : words) {
+            if (word.equals("bot")) {
+                return true;
+            }
+        }
+
+        // Также проверяем комбинации вроде "Googlebot", "SemrushBot" и т.д.
+        return ua.contains("googlebot") ||
+                ua.contains("bingbot") ||
+                ua.contains("yandexbot") ||
+                ua.contains("semrushbot") ||
+                ua.contains("ahrefsbot") ||
+                ua.contains("mj12bot") ||
+                ua.contains("dotbot");
+    }
+
+    public boolean isBot() {
+        return isBot;
     }
     private String parseOperatingSystem(String userAgentString) {
         if (userAgentString == null || userAgentString.isEmpty()) {
@@ -99,9 +152,7 @@ public class UserAgent {
     public String getBrowserType() {
         return browserType;
     }
-    public boolean isBot() {
-        return isBot;
-    }
+
 
     public String getOriginalUserAgentString() {
         return originalUserAgentString;
